@@ -31,21 +31,33 @@ export default function ViewEventClient({ events }: { events: EventMap }) {
     <div className="flex flex-wrap justify-center items-center">
       {Object.entries(events).map(([category, categoryEvents]) =>
         Object.entries(categoryEvents).map(([eventName, event]) => {
-          const dataArray: { label: string; value: string; isUrl?: boolean }[] =
-            [
-              { label: "Name", value: event.eventName },
-              { label: "Category", value: event.eventCategory },
-              { label: "Poster", value: event.poster as string, isUrl: true },
-            ];
+          const limitWords = (text: string, wordLimit: number) => {
+            const words = text.split(" ");
+            if (words.length > wordLimit) {
+              return words.slice(0, wordLimit).join(" ") + "...";
+            }
+            return text;
+          };
+          
+          const dataArray: { label: string; value: string; isUrl?: boolean }[] = [
+            { label: "Name", value: event.eventName },
+            { label: "Category", value: category },
+            { 
+              label: "Description", 
+              value: limitWords(event.description as string, 10), 
+              isUrl: true 
+            },
+          ];
 
           return (
             <div key={`${category}-${eventName}`} className="m-4">
               <BaseCard
                 data={dataArray}
+                imageAlt={event.eventName}
                 title={event.eventName}
                 image={event.poster || null}
-                toEdit={`events/${category}/${event.eventName}`} // Edit URL
-                onDelete={() => handleDelete(event.eventName, category)} // Trigger delete
+                toEdit={`events/${category}/${event.eventName}`}
+                onDelete={() => handleDelete(event.eventName, category)}
               />
             </div>
           );

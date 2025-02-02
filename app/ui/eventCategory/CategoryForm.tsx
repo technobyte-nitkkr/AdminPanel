@@ -70,8 +70,7 @@ export default function EventCategoryTable() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
       {eventCategories.map((category) => {
-        console.log('Rendering category:', category);
-        
+         
         return (
           <BaseCard
             key={category.key}
