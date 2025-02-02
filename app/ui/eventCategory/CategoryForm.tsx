@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import BaseCard from "../base_card";
 import {
-  getAllEventCategory,
+  getAllEventCategories,
   deleteEventCategory,
 } from "@/app/actions/eventCategory";
 
 interface EventCategory {
+  key: string;
   id: string;
-  eventCategory: string;
-  image: string;
+  icon: string;
+  index: number;
 }
 
 export default function EventCategoryTable() {
@@ -22,14 +23,15 @@ export default function EventCategoryTable() {
 
   const loadEventCategories = async () => {
     try {
-      const data = await getAllEventCategory();
-      const updatedData = data.map((category: any) => ({
-        ...category,
-        image: category.icon,
+      const data = await getAllEventCategories();
+      const validatedData = data.map(category => ({
+        key: category.key,
+        id: category.id || '', 
+        icon: category.icon || '',  
+        index: category.index || 0 
       }));
-  
-      setEventCategories(updatedData);
-      console.log(updatedData);
+      
+      setEventCategories(validatedData);
     } catch (err) {
       setError("Failed to load event categories");
       console.error(err);
@@ -37,13 +39,12 @@ export default function EventCategoryTable() {
       setIsLoading(false);
     }
   };
-  
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (key: string) => {
     try {
-      await deleteEventCategory(id);
+      await deleteEventCategory(key);
       setEventCategories(
-        eventCategories.filter((category) => category.id !== id),
+        eventCategories.filter((category) => category.key !== key)
       );
     } catch (err) {
       console.error("Failed to delete event category:", err);
@@ -69,15 +70,18 @@ export default function EventCategoryTable() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
       {eventCategories.map((category) => {
+        console.log('Rendering category:', category);
+        
         return (
           <BaseCard
-          key={category.id}
-          image={category.image}
-          title={`${category.id}`}
-          data={[]}
-          toEdit={`/panel/view/eventCategory/${category.id}`}
-          onDelete={() => handleDelete(category.id)}
-        />
+            key={category.key}
+            image={category.icon}
+            imageAlt={`Icon for ${category.id} category`}
+            title={category.key}
+            data={[]}
+            toEdit={`/panel/view/eventCategory/${category.key}`}
+            onDelete={() => handleDelete(category.key)}
+          />
         );
       })}
     </div>

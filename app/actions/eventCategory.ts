@@ -2,23 +2,26 @@ import { database, ref, get, update, remove, push, set } from "@/app/db";
 import createImgbbUrl from "../helpers/imgbb";
 
 export type EventCategoryData = {
-  eventCategory: string;
-  image: string;
+  id: string;  
+  icon: string;  // Changed from 'image' to match your schema
   index: number;
 };
 
-export type EventCategory = EventCategoryData & {
+export type EventCategory = {
+  key: string; 
   id: string;
+  icon: string;
+  index: number;
 };
 
+
 export type EventCategoryInput = {
-  eventCategory: string;
+  id: string; 
   image: File;
 };
 
-// Actions
 export async function createEventCategory(
-  data: EventCategoryInput,
+  data: EventCategoryInput
 ): Promise<void> {
   try {
     const imageResult = await createImgbbUrl(data.image);
@@ -26,70 +29,53 @@ export async function createEventCategory(
       throw new Error("Image upload failed");
     }
 
-    const randomIndex = Math.floor(1000 + Math.random() * 9000);
     const categoryData: EventCategoryData = {
-      eventCategory: data.eventCategory,
-      image: imageResult.url,
-      index: randomIndex,
+      id: data.id,
+      icon: imageResult.url,
+      index: Math.floor(1000 + Math.random() * 9000),
     };
 
-    const categoriesRef = ref(database, "eventCategories");
+    const categoriesRef = ref(database, "events");
     await push(categoriesRef, categoryData);
-    console.log("Event category created successfully");
   } catch (error) {
     console.error("Error creating event category:", error);
     throw new Error("Failed to create event category");
   }
 }
 
-export async function getAllEventCategory(): Promise<EventCategory[]> {
-  const categories: EventCategory[] = [];
-
+export async function getAllEventCategories(): Promise<EventCategory[]> {
   try {
     const categoriesRef = ref(database, "events");
     const snapshot = await get(categoriesRef);
 
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      for (const [id, value] of Object.entries(data)) {
-        categories.push({
-          id,
-          ...(value as EventCategoryData),
-        });
-      }
+    if (!snapshot.exists()) {
+      return [];
     }
 
-    return categories;
+    return Object.entries(snapshot.val()).map(([key, value]) => ({
+      key,
+      ...(value as EventCategoryData)
+    }));
   } catch (error) {
     console.error("Error fetching event categories:", error);
     throw new Error("Failed to fetch event categories");
   }
 }
 
-export async function deleteEventCategory(id: string): Promise<void> {
-  try {
-    const categoryRef = ref(database, `eventCategories/${id}`);
-    await remove(categoryRef);
-    console.log(`Event category with ID ${id} deleted successfully`);
-  } catch (error) {
-    console.error("Error deleting event category:", error);
-    throw new Error("Failed to delete event category");
-  }
-}
 
-export async function getEventCategoryById(id: string): Promise<EventCategory> {
+export async function getEventCategoryByKey(key: string): Promise<EventCategory> {
   try {
-    const categoryRef = ref(database, `eventCategories/${id}`);
+    const categoryRef = ref(database, `events/${key}`);
     const snapshot = await get(categoryRef);
 
-    if (snapshot.exists()) {
-      return {
-        id,
-        ...(snapshot.val() as EventCategoryData),
-      };
-    } else {
+    if (!snapshot.exists()) {
       throw new Error("Event category not found");
     }
+
+    return {
+      key,
+      ...(snapshot.val() as EventCategoryData)
+    };
   } catch (error) {
     console.error("Error fetching event category:", error);
     throw new Error("Failed to fetch event category");
@@ -97,24 +83,51 @@ export async function getEventCategoryById(id: string): Promise<EventCategory> {
 }
 
 export async function updateEventCategory(
-  id: string,
-  updatedData: Partial<EventCategory>,
+  key: string,
+  updates: { newId?: string; image?: File }
 ): Promise<void> {
   try {
-    const categoryRef = ref(database, `eventCategories/${id}`);
+    const categoryRef = ref(database, `events/${key}`);
+    const snapshot = await get(categoryRef);
 
-    if (updatedData.image && typeof updatedData.image !== "string") {
-      const imageResult = await createImgbbUrl(updatedData.image as File);
+    if (!snapshot.exists()) {
+      throw new Error("Event category not found");
+    }
+
+    const existingData = snapshot.val() as EventCategoryData;
+
+    let updatedData: EventCategoryData = { ...existingData };
+
+    if (updates.image) {
+      const imageResult = await createImgbbUrl(updates.image);
       if (!imageResult?.url) {
         throw new Error("Image upload failed");
       }
-      updatedData.image = imageResult.url;
+      updatedData.icon = imageResult.url;
     }
 
-    await update(categoryRef, updatedData);
-    console.log("Event category updated successfully");
+    
+    if (updates.newId) {
+      const newCategoryRef = ref(database, `events/${updates.newId}`);
+      await set(newCategoryRef, updatedData);
+      await remove(categoryRef);
+    } else {
+
+      await update(categoryRef, updatedData);
+    }
   } catch (error) {
     console.error("Error updating event category:", error);
     throw new Error("Failed to update event category");
+  }
+}
+
+
+export async function deleteEventCategory(key: string): Promise<void> {
+  try {
+    const categoryRef = ref(database, `events/${key}`);
+    await remove(categoryRef);
+  } catch (error) {
+    console.error("Error deleting event category:", error);
+    throw new Error("Failed to delete event category");
   }
 }
