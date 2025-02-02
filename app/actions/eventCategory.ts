@@ -46,7 +46,7 @@ export async function getAllEventCategory(): Promise<EventCategory[]> {
   const categories: EventCategory[] = [];
 
   try {
-    const categoriesRef = ref(database, "eventCategories");
+    const categoriesRef = ref(database, "events");
     const snapshot = await get(categoriesRef);
 
     if (snapshot.exists()) {

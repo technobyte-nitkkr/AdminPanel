@@ -23,7 +23,13 @@ export default function EventCategoryTable() {
   const loadEventCategories = async () => {
     try {
       const data = await getAllEventCategory();
-      setEventCategories(data);
+      const updatedData = data.map((category: any) => ({
+        ...category,
+        image: category.icon,
+      }));
+  
+      setEventCategories(updatedData);
+      console.log(updatedData);
     } catch (err) {
       setError("Failed to load event categories");
       console.error(err);
@@ -31,6 +37,7 @@ export default function EventCategoryTable() {
       setIsLoading(false);
     }
   };
+  
 
   const handleDelete = async (id: string) => {
     try {
@@ -64,13 +71,13 @@ export default function EventCategoryTable() {
       {eventCategories.map((category) => {
         return (
           <BaseCard
-            key={category.id}
-            image={category.image}
-            title={category.eventCategory}
-            data={[]}
-            toEdit={`/panel/view/eventCategory/${category.id}`}
-            onDelete={() => handleDelete(category.id)}
-          />
+          key={category.id}
+          image={category.image}
+          title={`${category.id}`}
+          data={[]}
+          toEdit={`/panel/view/eventCategory/${category.id}`}
+          onDelete={() => handleDelete(category.id)}
+        />
         );
       })}
     </div>
