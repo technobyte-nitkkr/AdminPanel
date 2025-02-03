@@ -1,10 +1,9 @@
-"use client";
-
+"use client"
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getEventByName, updateEventByName } from "@/app/actions/events";
 import { BaseForm } from "../base_form";
-import { getAllEventCategory } from "@/app/actions/eventCategory";
+import { getAllEventCategories } from "@/app/actions/eventCategory";
 import { createEventFormConfig } from "@/app/constants/events";
 import Image from "next/image";
 
@@ -40,19 +39,20 @@ export default function UpdateEventForm({
       try {
         const [eventData, categoriesData] = await Promise.all([
           getEventByName(eventCategory, eventName),
-          getAllEventCategory(),
+          getAllEventCategories(),
         ]);
 
         if (eventData) {
           const processedEventData = {
             ...eventData,
-            rules: Array.isArray(eventData.rules)
-              ? eventData.rules
-              : (eventData.rules || "")
-                  .split("|")
-                  .filter((rule: string) => rule.trim()),
-            flagship:
-              eventData.flagship === "true" || eventData.flagship === true,
+            rules: eventData.rules
+              ? Array.isArray(eventData.rules)
+                ? eventData.rules
+                : (eventData.rules || "")
+                    .split("|")
+                    .filter((rule: string) => rule.trim())
+              : [], 
+            flagship: eventData.flagship === "true" || eventData.flagship === true,
             startTime:
               eventData.startTime instanceof Date
                 ? eventData.startTime
@@ -69,7 +69,7 @@ export default function UpdateEventForm({
             eventData.coordinators || [
               { coordinator_name: "", coordinator_number: "" },
               { coordinator_name: "", coordinator_number: "" },
-            ],
+            ]
           );
 
           setImageURL(eventData.poster || eventData.imageURL || null);
@@ -96,11 +96,9 @@ export default function UpdateEventForm({
               options: loading
                 ? ["Loading..."]
                 : categories.map((category) => category.eventCategory),
-              placeholder: loading
-                ? "Loading categories..."
-                : "Select the category",
+              placeholder: loading ? "Loading categories..." : "Select the category",
             }
-          : field,
+          : field
       )
       .filter((field) => field.name !== "image"), // Remove image field from form
   };
@@ -116,7 +114,7 @@ export default function UpdateEventForm({
   const handleCoordinatorChange = (
     index: number,
     field: string,
-    value: string,
+    value: string
   ) => {
     const updatedCoordinators = [...coordinators];
     updatedCoordinators[index] = {
@@ -147,12 +145,7 @@ export default function UpdateEventForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData ||
-      !formData.eventName ||
-      !formData.startTime ||
-      !formData.endTime
-    ) {
+    if (!formData || !formData.eventName || !formData.startTime || !formData.endTime) {
       setErrorText("Please fill in all required fields.");
       return;
     }
@@ -283,7 +276,7 @@ export default function UpdateEventForm({
               handleCoordinatorChange(
                 index,
                 "coordinator_number",
-                e.target.value,
+                e.target.value
               )
             }
             className="border text-black p-2 rounded mt-1"
