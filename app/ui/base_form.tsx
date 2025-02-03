@@ -12,18 +12,18 @@ interface Field {
   name: string;
   label: string;
   type:
-    | "select"
-    | "file"
-    | "text"
-    | "textarea"
-    | "password"
-    | "email"
-    | "date"
-    | "time"
-    | "datetime-local"
-    | "number"
-    | "checkbox"
-    | "boolean";
+  | "select"
+  | "file"
+  | "text"
+  | "textarea"
+  | "password"
+  | "email"
+  | "date"
+  | "time"
+  | "datetime-local"
+  | "number"
+  | "checkbox"
+  | "boolean";
   options?: string[];
   placeholder?: string;
   required?: boolean;
@@ -131,11 +131,13 @@ export const BaseForm: React.FC<BaseFormProps> = ({
                   className="p-2 text-black w-full md:w-2/3 rounded-md"
                 >
                   <option value="">Select...</option>
-                  {field.options?.map((option: string) => (
-                    <option key={option.replace(" ", "-")} value={option}>
-                      {option}
-                    </option>
-                  ))}
+                  {field.options
+                    ?.filter((option): option is string => typeof option === "string")
+                    .map((option) => (
+                      <option key={option.replace(/\s+/g, "-")} value={option}>
+                        {option}
+                      </option>
+                    ))}
                 </select>
               ) : field.type === "textarea" ? (
                 <textarea
@@ -172,6 +174,7 @@ export const BaseForm: React.FC<BaseFormProps> = ({
           {submitText}
         </button>
       </form>
+
       {error && <p className="text-red-500">{error}</p>}
       {success && <p className="text-green-500">{success}</p>}
     </div>

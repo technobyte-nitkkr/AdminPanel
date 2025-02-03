@@ -177,20 +177,14 @@ export async function updateEventByName(
   }
 }
 
+
 export async function getEventByName(
   eventCategory: string,
   eventName: string,
 ): Promise<Event | null> {
   try {
-    const eventsRef = ref(database, "eventDescription");
-    const eventQuery = query(
-      eventsRef,
-      orderByChild("eventCategory"),
-      equalTo(eventCategory),
-    );
-
-    const snapshot = await get(eventQuery);
-
+    const eventsRef = ref(database, `eventDescription/${eventCategory}`);
+    const snapshot = await get(eventsRef);
     if (!snapshot.exists()) {
       console.error(
         `Event '${eventName}' in category '${eventCategory}' does not exist.`,
@@ -198,18 +192,21 @@ export async function getEventByName(
       return null;
     }
 
-    let foundEvent: Event | null = null;
-
-    snapshot.forEach((childSnapshot) => {
-      const event = childSnapshot.val() as Event;
-      if (event.eventName === eventName) {
-        foundEvent = event;
-      }
-    });
-
-    return foundEvent;
+    const events = snapshot.val();
+    const decodedEventName = decodeURIComponent(eventName);
+    const foundEvent = events[decodedEventName] as Event;
+    if (foundEvent) {
+      return foundEvent;
+    } else {
+      console.error(
+        `Event '${eventName}' in category '${eventCategory}' does not exist.`,
+      );
+      return null;
+    }
   } catch (error) {
     console.error("Error fetching event:", error);
     throw new Error("Failed to fetch event");
   }
 }
+
+

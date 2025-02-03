@@ -1,46 +1,47 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { getEventByName, updateEventByName } from "@/app/actions/events";
 import { BaseForm } from "../base_form";
 import { getAllEventCategories } from "@/app/actions/eventCategory";
 import { createEventFormConfig } from "@/app/constants/events";
 import Image from "next/image";
+import type { EventCategory } from "@/app/actions/eventCategory";
 
 type Coordinator = {
   coordinator_name: string;
   coordinator_number: string;
 };
 
-interface EventCategory {
-  id: string;
-  eventCategory: string;
-  image: string;
-}
-
 export default function UpdateEventForm({
   eventCategory,
   eventName,
 }: {
-  eventCategory: string;
+  eventCategory?: string;
   eventName: string;
 }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const categoryFromURL = decodeURIComponent(pathname.split("/").slice(-2, -1)[0] || "");
+  const resolvedEventCategory = eventCategory || categoryFromURL;
+
   const [formData, setFormData] = useState<any>(null);
   const [coordinators, setCoordinators] = useState<Coordinator[]>([]);
   const [imageURL, setImageURL] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [categories, setCategories] = useState<EventCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorText, setErrorText] = useState<string>("");
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [eventData, categoriesData] = await Promise.all([
-          getEventByName(eventCategory, eventName),
+          getEventByName(resolvedEventCategory, eventName),
           getAllEventCategories(),
         ]);
+        console.log(eventData);
 
         if (eventData) {
           const processedEventData = {
@@ -48,19 +49,13 @@ export default function UpdateEventForm({
             rules: eventData.rules
               ? Array.isArray(eventData.rules)
                 ? eventData.rules
-                : (eventData.rules || "")
-                    .split("|")
-                    .filter((rule: string) => rule.trim())
-              : [], 
-            flagship: eventData.flagship === "true" || eventData.flagship === true,
-            startTime:
-              eventData.startTime instanceof Date
-                ? eventData.startTime
-                : new Date(eventData.startTime),
-            endTime:
-              eventData.endTime instanceof Date
-                ? eventData.endTime
-                : new Date(eventData.endTime),
+                : String(eventData.rules)
+                  .split("|")
+                  .filter((rule) => rule.trim())
+              : [],
+            flagship: String(eventData.flagship).toLowerCase() === "true",
+            startTime: new Date(eventData.startTime),
+            endTime: new Date(eventData.endTime),
           };
 
           setFormData(processedEventData);
@@ -72,7 +67,10 @@ export default function UpdateEventForm({
             ]
           );
 
-          setImageURL(eventData.poster || eventData.imageURL || null);
+          setImageURL(eventData.poster || null);
+          // Pre-select category
+          const categoryFromEvent = eventData.eventCategory|| categoryFromURL;
+          setSelectedCategory(categoryFromEvent); // Select category from event if present, else URL category
         } else {
           setErrorText("Event not found.");
         }
@@ -84,7 +82,7 @@ export default function UpdateEventForm({
       }
     }
     fetchData();
-  }, [eventCategory, eventName]);
+  }, [resolvedEventCategory, eventName, categoryFromURL]);
 
   const dynamicEventFormConfig = {
     ...createEventFormConfig,
@@ -92,15 +90,16 @@ export default function UpdateEventForm({
       .map((field) =>
         field.name === "eventCategory"
           ? {
-              ...field,
-              options: loading
-                ? ["Loading..."]
-                : categories.map((category) => category.eventCategory),
-              placeholder: loading ? "Loading categories..." : "Select the category",
-            }
+            ...field,
+            options: loading
+              ? ["Loading..."]
+              : categories.map((category) => category.key),
+            placeholder: loading ? "Loading categories..." : "Select the category",
+            value: selectedCategory,  // Ensure value is set for the select
+          }
           : field
       )
-      .filter((field) => field.name !== "image"), // Remove image field from form
+      .filter((field) => field.name !== "image"),
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,14 +167,18 @@ export default function UpdateEventForm({
 
     try {
       const formDataForSubmit = new FormData();
-      formDataForSubmit.append("eventCategory", eventCategory);
-      formDataForSubmit.append("eventName", eventName);
+
+      const resolvedEventCategory = eventCategory || ""; // Ensure it's always a string
+      const resolvedEventName = eventName || ""; // Ensure eventName is not undefined
+
+      formDataForSubmit.append("eventCategory", resolvedEventCategory);
+      formDataForSubmit.append("eventName", resolvedEventName);
 
       if (imageFile) {
         formDataForSubmit.append("image", imageFile);
       }
 
-      await updateEventByName(eventCategory, eventName, {
+      await updateEventByName(resolvedEventCategory, eventName, {
         ...formData,
         coordinators,
         rules: processedRules,
@@ -199,15 +202,15 @@ export default function UpdateEventForm({
       <BaseForm
         {...dynamicEventFormConfig}
         defaultValues={{
-          ...formData,
+          ...(formData || {}),
           startTime:
             formData?.startTime instanceof Date
               ? formData.startTime.toISOString().slice(0, 16)
-              : formData?.startTime,
+              : formData?.startTime ?? "",
           endTime:
             formData?.endTime instanceof Date
               ? formData.endTime.toISOString().slice(0, 16)
-              : formData?.endTime,
+              : formData?.startTime ?? "",
         }}
         submit={(data: any) => {
           const processedData = {
@@ -215,8 +218,8 @@ export default function UpdateEventForm({
             rules: Array.isArray(data.rules)
               ? data.rules
               : (data.rules || "")
-                  .split("|")
-                  .filter((rule: string) => rule.trim()),
+                .split("|")
+                .filter((rule: string) => rule.trim()),
             flagship: data.flagship === "true" || data.flagship === true,
             startTime: new Date(data.startTime).getTime(),
             endTime: new Date(data.endTime).getTime(),
