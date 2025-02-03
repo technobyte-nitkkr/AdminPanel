@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getEventByName, updateEventByName } from "@/app/actions/events";
-import { BaseForm } from "../base_form";
+import { BaseForm, BaseFormProps } from "../base_form";
 import { getAllEventCategories } from "@/app/actions/eventCategory";
 import { createEventFormConfig } from "@/app/constants/events";
 import Image from "next/image";
@@ -200,7 +200,7 @@ export default function UpdateEventForm({
   return (
     <div>
       <BaseForm
-        {...dynamicEventFormConfig}
+        {...dynamicEventFormConfig as BaseFormProps}
         defaultValues={{
           ...(formData || {}),
           startTime:
