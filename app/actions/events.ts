@@ -50,7 +50,7 @@ export async function createEvent(eventData: eventData): Promise<string> {
       endTime: endTimeNumber,
     };
 
-    await set(ref(database, `events/${uniqueDocId}`), fullEventData);
+    await set(ref(database, `eventDescription/${uniqueDocId}`), fullEventData);
 
     return uniqueDocId;
   } catch (error) {
@@ -60,37 +60,28 @@ export async function createEvent(eventData: eventData): Promise<string> {
 }
 
 export async function getAllEvents(): Promise<EventMap> {
-  const eventMap: EventMap = {};
   try {
-    const eventsRef = ref(database, "events");
+    const eventsRef = ref(database, "eventDescription");
     const snapshot = await get(eventsRef);
-
-    if (snapshot.exists()) {
-      const events = snapshot.val();
-      for (const eventId in events) {
-        const eventData = events[eventId] as Event;
-        const { eventCategory, eventName } = eventData;
-
-        if (!eventMap[eventCategory]) {
-          eventMap[eventCategory] = {};
-        }
-        eventMap[eventCategory][eventName] = eventData;
-      }
+    
+    if (!snapshot.exists()) {
+      return {};
     }
 
-    return eventMap;
+    return snapshot.val();
   } catch (error) {
     console.error("Error fetching all events:", error);
     throw new Error("Failed to fetch all events");
   }
 }
 
+
 export async function deleteEvent(
   eventName: string,
   eventCategory: string,
 ): Promise<void> {
   try {
-    const eventsRef = ref(database, "events");
+    const eventsRef = ref(database, "eventDescription");
     const eventQuery = query(
       eventsRef,
       orderByChild("eventCategory"),
@@ -115,7 +106,7 @@ export async function deleteEvent(
     });
 
     if (eventKey) {
-      await remove(ref(database, `events/${eventKey}`));
+      await remove(ref(database, `eventDescription/${eventKey}`));
     } else {
       throw new Error("Event not found.");
     }
@@ -134,7 +125,7 @@ export async function updateEventByName(
   updatedData: any,
 ): Promise<void> {
   try {
-    const eventsRef = ref(database, "events");
+    const eventsRef = ref(database, "eventDescription");
     const eventQuery = query(
       eventsRef,
       orderByChild("eventCategory"),
@@ -176,7 +167,7 @@ export async function updateEventByName(
 
     delete updatedEventData.image;
 
-    await update(ref(database, `events/${eventKey}`), updatedEventData);
+    await update(ref(database, `eventDescription/${eventKey}`), updatedEventData);
   } catch (error) {
     console.error(
       `Failed to update event '${eventName}' in category '${eventCategory}':`,
@@ -186,20 +177,14 @@ export async function updateEventByName(
   }
 }
 
+
 export async function getEventByName(
   eventCategory: string,
   eventName: string,
 ): Promise<Event | null> {
   try {
-    const eventsRef = ref(database, "events");
-    const eventQuery = query(
-      eventsRef,
-      orderByChild("eventCategory"),
-      equalTo(eventCategory),
-    );
-
-    const snapshot = await get(eventQuery);
-
+    const eventsRef = ref(database, `eventDescription/${eventCategory}`);
+    const snapshot = await get(eventsRef);
     if (!snapshot.exists()) {
       console.error(
         `Event '${eventName}' in category '${eventCategory}' does not exist.`,
@@ -207,18 +192,21 @@ export async function getEventByName(
       return null;
     }
 
-    let foundEvent: Event | null = null;
-
-    snapshot.forEach((childSnapshot) => {
-      const event = childSnapshot.val() as Event;
-      if (event.eventName === eventName) {
-        foundEvent = event;
-      }
-    });
-
-    return foundEvent;
+    const events = snapshot.val();
+    const decodedEventName = decodeURIComponent(eventName);
+    const foundEvent = events[decodedEventName] as Event;
+    if (foundEvent) {
+      return foundEvent;
+    } else {
+      console.error(
+        `Event '${eventName}' in category '${eventCategory}' does not exist.`,
+      );
+      return null;
+    }
   } catch (error) {
     console.error("Error fetching event:", error);
     throw new Error("Failed to fetch event");
   }
 }
+
+

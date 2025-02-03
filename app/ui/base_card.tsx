@@ -1,30 +1,26 @@
 "use client";
-// Purpose: This file will be used as a base file for all the cards.
-// It will have a common structure for all the cards.
-// It will have a card image, card title, then rest is whatever key-value pairs it will get as props.
-// For lengthy values, it will have ellipsis (...) at the end.
-// At the bottom, it will have edit and delete buttons with a confirmation modal for delete.
+
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-// Declaring interfaces for the props
 interface BaseCardProps {
   image: string | null;
   title: string;
+  imageAlt: string;
   data: {
     label: string;
     value: string;
-    isURL?: boolean; // If there is a URL we will use <Link> tag by next/link
+    isURL?: boolean;
   }[];
   toEdit: string;
   onDelete: () => void;
 }
 
-// BaseCard component
 export default function BaseCard({
   image,
+  imageAlt,
   title,
   data,
   toEdit,
@@ -38,13 +34,13 @@ export default function BaseCard({
   };
 
   return (
-    <div className="bg-gray-900 p-2 shadow-md rounded-md overflow-clip border border-gray-800">
+    <div className="bg-gray-900 w-full md:w-[300px] p-2 shadow-md rounded-md overflow-clip border border-gray-800">
       <div className="flex flex-col items-center justify-between gap-2">
         <div className="flex flex-col items-center">
           <div className="w-[150px] h-[150px] rounded-full overflow-hidden shadow-md shadow-gray-400">
             <Image
               src={image || "https://placehold.co/600x400"}
-              alt={title}
+              alt={imageAlt} 
               layout="responsive"
               width={48}
               height={48}

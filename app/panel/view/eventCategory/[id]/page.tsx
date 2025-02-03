@@ -1,9 +1,10 @@
 "use client";
+
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BaseForm } from "@/app/ui/base_form";
 import {
-  getEventCategoryById,
+  getEventCategoryByKey,
   updateEventCategory,
 } from "@/app/actions/eventCategory";
 import { EventCategory } from "@/app/actions/eventCategory";
@@ -21,6 +22,10 @@ type FieldType =
   | "datetime-local"
   | "checkbox";
 
+type FormData = Omit<EventCategory, 'icon'> & {
+  icon?: File | string;
+};
+
 const EditEventCategoryPage = () => {
   const router = useRouter();
   const { id } = useParams();
@@ -30,7 +35,7 @@ const EditEventCategoryPage = () => {
     if (id) {
       (async () => {
         try {
-          const categoryData = await getEventCategoryById(id as string);
+          const categoryData = await getEventCategoryByKey(id as string);
           setCategory(categoryData);
         } catch (error) {
           console.error("Error fetching event category:", error);
@@ -39,11 +44,21 @@ const EditEventCategoryPage = () => {
     }
   }, [id]);
 
-  const handleSubmit = async (updatedData: Partial<EventCategory>) => {
-    if (!id) return;
+  const handleSubmit = async (updatedData: FormData) => {
+    if (!id || !category) return;
 
     try {
-      await updateEventCategory(id as string, updatedData);
+      const newId = updatedData.key && updatedData.key !== category.key ? updatedData.key : undefined;
+    
+      const imageFile = updatedData.icon && typeof updatedData.icon !== 'string' 
+        ? updatedData.icon 
+        : undefined;
+
+      await updateEventCategory(id as string, {
+        newId,
+        image: imageFile,
+      });
+
       alert("Event category updated successfully!");
       router.push("/panel/view/eventCategory");
     } catch (error) {
@@ -58,18 +73,19 @@ const EditEventCategoryPage = () => {
 
   const fields = [
     {
-      name: "eventCategory",
+      name: "key",
       label: "Event Category",
       type: "text" as FieldType,
-      value: category.eventCategory,
+      value: category.key,
       required: true,
     },
     {
-      name: "image",
+      name: "icon",
       label: "Image",
       type: "file" as FieldType,
-      value: category.image,
+      value: category.icon,
       required: true,
+      accept: "image/*",
     },
     {
       name: "index",

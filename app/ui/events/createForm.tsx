@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { BaseForm } from "../base_form";
 import { createEvent } from "@/app/actions/events";
-import { getAllEventCategory } from "@/app/actions/eventCategory";
+import { getAllEventCategories } from "@/app/actions/eventCategory";
 import {
   createEventFormConfig as baseEventFormConfig,
   addCoordinatorFormConfig,
 } from "@/app/constants/events";
-
+import type { EventCategory } from "@/app/actions/eventCategory";
 type Coordinator = {
   coordinator_name: string;
   coordinator_number: string;
@@ -26,12 +26,6 @@ interface FormState {
   startTime: number;
   venue: string;
   image: File;
-}
-
-interface EventCategory {
-  id: string;
-  eventCategory: string;
-  image: string;
 }
 
 export default function CreateForm() {
@@ -56,7 +50,7 @@ export default function CreateForm() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const categories = await getAllEventCategory();
+        const categories = await getAllEventCategories();
         setCategories(categories);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -174,7 +168,7 @@ export default function CreateForm() {
             ...field,
             options: loading
               ? ["Loading..."]
-              : categories.map((category) => category.eventCategory),
+              : categories.map((category) => category.key),
             placeholder: loading
               ? "Loading categories..."
               : "Select the category",
