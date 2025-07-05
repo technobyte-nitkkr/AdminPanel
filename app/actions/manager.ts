@@ -7,10 +7,12 @@ import { addSponsordto ,SponsorsResponse } from "../dtos/sponsor.dto";
 import { QueryResponse } from "../dtos/query.dto";
 import { mailResponse } from "../dtos/mail.dto";
 
-export async function addEvent(eventData: Event): Promise<addEventResponse> {
+export async function addEvent(eventData: Event, token?: string): Promise<addEventResponse> {
     try{
         const url= `${process.env.SERVER_URL}/events`;
-        const response=await axios.post(url, eventData);
+        const headers = token ? { Authorization: token } : undefined;
+        const response=await axios.post(url, eventData, { headers });
+        console.log(response)
         return response.data;
     }
     catch (error: any) {
@@ -19,10 +21,13 @@ export async function addEvent(eventData: Event): Promise<addEventResponse> {
     }
 }
 
-export async function addSponsor(sponsor: addSponsordto): Promise<SponsorsResponse> {
+export async function addSponsor(sponsor: addSponsordto, token?: string): Promise<SponsorsResponse> {
     try{
         const url= `${process.env.SERVER_URL}/sponsors`;
-        const response=await axios.post(url, sponsor);
+        const headers = token ? { Authorization: token } : undefined;
+        
+        const response=await axios.post(url, sponsor, { headers });
+         
         return response.data;
     }
     catch (error: any) {
@@ -31,13 +36,14 @@ export async function addSponsor(sponsor: addSponsordto): Promise<SponsorsRespon
     }
 }
 
-export async function getDataOfEvent(eventCategory:string , eventName:string): Promise<UsersResponse> {
+export async function getDataOfEvent(eventCategory:string , eventName:string, token?: string): Promise<UsersResponse> {
     if (!eventCategory || !eventName) {
         throw new Error("Event category and name are required");
     }
     try {
-        const url = `${process.env.SERVER_URL}/admin/event/${eventCategory}/${eventName}`;
-        const response = await axios.get(url);
+        const url = `${process.env.SERVER_URL}/admin/event?eventCategory=${eventCategory}&eventName=${eventName}`;
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.get(url, { headers });
         return response.data;
     } catch (error: any) {
         console.error("Error fetching event data:", error?.response?.data || error.message || error);
@@ -45,10 +51,11 @@ export async function getDataOfEvent(eventCategory:string , eventName:string): P
     }
 }
 
-export async function getQuery() : Promise<QueryResponse> {
+export async function getQuery(token?: string) : Promise<QueryResponse> {
     try {
         const url = `${process.env.SERVER_URL}/admin/query`;
-        const response = await axios.get(url);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.get(url, { headers });
         return response.data;
     } catch (error: any) {
         console.error("Error fetching queries:", error?.response?.data || error.message || error);
@@ -56,7 +63,7 @@ export async function getQuery() : Promise<QueryResponse> {
     }
 }
 
-export async function mailCategory(eventName:string , eventCategory:string,heading:string,buttontext:string,buttonlink:string,subject:string,thankyou:string,detail:string): Promise<mailResponse> {
+export async function mailCategory(eventName:string , eventCategory:string,heading:string,buttontext:string,buttonlink:string,subject:string,thankyou:string,detail:string, token?: string): Promise<mailResponse> {
     if (!eventCategory || !eventName) {
         throw new Error("Event category and name are required");
     }
@@ -72,7 +79,8 @@ export async function mailCategory(eventName:string , eventCategory:string,headi
             thankyou,
             detail
         };
-        const response = await axios.post(url, data);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.post(url, data, { headers });
         return response.data;
     } catch (error: any) {
         console.error("Error sending mail:", error?.response?.data || error.message || error);

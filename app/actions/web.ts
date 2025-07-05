@@ -1,21 +1,19 @@
 import axios from "axios";
 import { LoginRequest, LoginUserResponse, UpdateUserRequest } from "../dtos/user.dto";
 
-export async function loginWebUsingGoogleWeb(Token:LoginRequest): Promise<LoginUserResponse> {    
+export async function loginWebUsingGoogleWeb(Token:LoginRequest, token?: string): Promise<LoginUserResponse> {    
     if(!Token || !Token.idToken || Token.idToken.trim().length === 0) {
         throw new Error("Invalid token: Token is missing or empty");
     }
     
     try {
         const url=`${process.env.SERVER_URL}/login`;
-
-    
-        const response= await axios.post<LoginUserResponse>(url,Token, {
-          headers: {
+        const headers: any = {
             "Content-Type": "application/json",
             Accept: "application/json"
-          }
-    });
+        };
+        if (token) headers.Authorization = token;
+        const response= await axios.post<LoginUserResponse>(url,Token, { headers });
 
         return response.data;
 
@@ -27,7 +25,7 @@ export async function loginWebUsingGoogleWeb(Token:LoginRequest): Promise<LoginU
     }
 }
 
-export async function UpdateUserProfileForWeb(payload:UpdateUserRequest): Promise<LoginUserResponse> {
+export async function UpdateUserProfileForWeb(payload:UpdateUserRequest, token?: string): Promise<LoginUserResponse> {
     if(!payload) {
         throw new Error("Empty fields! fill fields to update the user");
     }
@@ -38,13 +36,12 @@ export async function UpdateUserProfileForWeb(payload:UpdateUserRequest): Promis
     try {
         
         const url=`${process.env.SERVER_URL}/user`
-
-        const response=await axios.put<LoginUserResponse>(url,payload,{
-          headers: {
+        const headers: any = {
             "Content-Type": "application/json",
             Accept: "application/json"
-        }
-    })
+        };
+        if (token) headers.Authorization = token;
+        const response=await axios.put<LoginUserResponse>(url,payload,{ headers })
 
         return response.data
 

@@ -5,8 +5,9 @@ import {
   createLecture, 
   updateLecture, 
   deleteLecture, 
-  Lecture // Import the Lecture type
+  Lecture
 } from '@/app/actions/lecture';
+import { getGuestLectures } from '@/app/actions/information';
 
 export async function GET(request: NextRequest) {
   try {

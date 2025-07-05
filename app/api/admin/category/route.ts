@@ -3,8 +3,10 @@ import { addCategory } from '@/app/actions/admin';
 
 export async function POST(request: NextRequest) {
   try {
+
+    const authHeader = request.headers.get('authorization') || '';
     const body = await request.json();
-    const result = await addCategory(body);
+    const result = await addCategory(body,authHeader);
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
