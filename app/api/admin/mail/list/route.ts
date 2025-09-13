@@ -5,12 +5,20 @@ export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization') || '';
     const body = await request.json();
-    const result = await sendMailToMultipleUsers(body,authHeader);
+    if (!body) {
+      return NextResponse.json(
+        { success: false, message: 'Mail data is required' },
+        { status: 400 }
+      );
+    }    const result = await sendMailToMultipleUsers(body,authHeader);
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to send mail' },
-      { status: 500 }
+      { 
+        success: false, 
+        message: error?.response?.data?.message || error.message || 'Failed to send mail'
+      },
+      { status: error?.response?.status || 500 }
     );
   }
 }

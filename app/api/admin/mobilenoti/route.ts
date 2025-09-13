@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateUserByAdmin } from '@/app/actions/admin';
+import { sendNotification } from '@/app/actions/admin';
 
-export async function PUT(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization') || '';
     const body = await request.json();
     if (!body) {
       return NextResponse.json(
-        { success: false, message: 'User data is required' } ,
+        { success: false, message: 'Notification data is required' },
         { status: 400 }
       );
-    }    const result = await updateUserByAdmin(body,authHeader);
-    return NextResponse.json(result);
+    }    const result = await sendNotification(body,authHeader);
+    return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       { 
         success: false, 
-        message: error?.response?.data?.message || error.message || 'Failed to update user'
+        message: error?.response?.data?.message || error.message || 'Failed to send notification'
       },
       { status: error?.response?.status || 500 }
     );

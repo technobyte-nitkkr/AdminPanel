@@ -3,7 +3,6 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import NavRoutes from "@/app/constants/routes";
 import Sidenav from "@/app/ui/sidenav";
-
 const poppins = Poppins({
   weight: ["400", "700", "800"],
   variable: "--font-poppins",

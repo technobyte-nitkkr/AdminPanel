@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { addSponsor } from '@/app/actions/manager';
 import { 
   getAllSponsors, 
-  createSponsor, 
   updateSponsor, 
-  deleteSponsor,
-  // getSponsorsByCategory // Commented out as it's not defined in actions
+  deleteSponsor
 } from '@/app/actions/sponsors';
 
 export async function GET(request: NextRequest) {
@@ -32,42 +31,42 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  
   try {
-    const formData = await request.formData();
+    const contentType = request.headers.get('content-type');
+    let sponsorData;
+
+    if (contentType?.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      sponsorData = {
+        category: formData.get('category') as string,
+        alt: formData.get('alt') as string,
+        name: formData.get('name') as string,
+        targetUrl: formData.get('targetUrl') as string,
+        image: formData.get('image') as File | null,
+      };
+    } else {
+      // Handle JSON data
+      sponsorData = await request.json();
+    }
     
-    // Create sponsor object from form data
-    const sponsor = {
-      category: formData.get('category') as string,
-      alt: formData.get('alt') as string,
-      name: formData.get('name') as string,
-      targetUrl: formData.get('targetUrl') as string,
-      image: formData.get('image') as File | null,
-    };
-    
-    if (!sponsor.category || !sponsor.name) {
+    if (!sponsorData.sponsor.name) {
       return NextResponse.json(
-        { error: 'Category and name are required' },
+        { success: false, message: 'Category and name are required' },
         { status: 400 }
       );
     }
-    
-    const result = await createSponsor(sponsor);
-    
-    if (typeof result === 'object' && 'err_desc' in result) {
-      return NextResponse.json(
-        { error: result.err_desc },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
-      { id: result, message: 'Sponsor created successfully' },
-      { status: 201 }
-    );
+     
+    const authHeader = request.headers.get('authorization') || '';
+    const result = await addSponsor(sponsorData,authHeader);
+    return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to create sponsor' },
-      { status: 500 }
+      { 
+        success: false, 
+        message: error?.response?.data?.message || error.message || 'Failed to add sponsor'
+      },
+      { status: error?.response?.status || 500 }
     );
   }
 }

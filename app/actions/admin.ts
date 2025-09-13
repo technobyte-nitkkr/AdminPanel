@@ -6,11 +6,17 @@ import { SimpleResponse, UserUpdateBody } from "../dtos/user.dto";
 import { MailBody } from "../dtos/mail.dto"; 
 import { NotificationBody } from "../dtos/notification.dto";
 
-export async function addCategory(category:Category): Promise<SimpleCategoriesResponse>{
+export async function addCategory(category:Category, token?: string): Promise<SimpleCategoriesResponse>{
     if(!category) throw new Error("Category is required");
     try {
         const url=`${process.env.SERVER_URL}/events/categories`;
-        const response = await axios.post(url,category)
+        const headers = token ? { Authorization: token } : undefined;
+        
+        const response = await axios.post(url,{
+            category:category.categoryName,
+            imgUrl:category.imgUrl,
+            icon:category.icon
+        }, { headers });
         return response.data;
     } catch (error:any) {
         console.error("Error adding category:", error?.response?.data || error.message || error);
@@ -18,11 +24,12 @@ export async function addCategory(category:Category): Promise<SimpleCategoriesRe
     }
 }
 
-export async function deleteQuery(query: QueryBody): Promise<SimpleResponse>{
+export async function deleteQuery(query: QueryBody, token?: string): Promise<SimpleResponse>{
     if(!query) throw new Error("Query required");
     try {
         const url=`${process.env.SERVER_URL}/admin/query`;
-        const response = await axios.put(url,query);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.put(url,query, { headers });
         return response.data;
     } catch (error:any) {
         console.error("Error deleting query:", error?.response?.data || error.message || error);
@@ -30,11 +37,12 @@ export async function deleteQuery(query: QueryBody): Promise<SimpleResponse>{
     }
 }
 
-export async function sendMailToMultipleUsers(mail:MailBody): Promise<SimpleResponse>{
+export async function sendMailToMultipleUsers(mail:MailBody, token?: string): Promise<SimpleResponse>{
     if(!mail) throw new Error("Mail data is required");
     try {
         const url = `${process.env.SERVER_URL}/admin/mail/list`;
-        const response=await axios.post(url,mail);
+        const headers = token ? { Authorization: token } : undefined;
+        const response=await axios.post(url,mail, { headers });
         return response.data;
     } catch (error:any) {
         console.error("Error sending mail:", error?.response?.data || error.message || error);
@@ -42,11 +50,12 @@ export async function sendMailToMultipleUsers(mail:MailBody): Promise<SimpleResp
     }
 }
 
-export async function sendNotification(notification:NotificationBody): Promise<SimpleResponse>{
+export async function sendNotification(notification:NotificationBody, token?: string): Promise<SimpleResponse>{
     if(!notification) throw new Error("Notification data is required");
     try{
         const url=`${process.env.SERVER_URL}/admin/mobilenoti`;
-        const response = await axios.post(url,notification);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.post(url,notification, { headers });
         return response.data;
     }catch(error:any){
         console.error("Error sending notification:", error?.response?.data || error.message || error);
@@ -54,10 +63,11 @@ export async function sendNotification(notification:NotificationBody): Promise<S
     }
 }
 
-export async function updateUser(): Promise<SimpleResponse> {
+export async function updateUser(token?: string): Promise<SimpleResponse> {
     try {
         const url=`${process.env.SERVER_URL}/updateUsers`;
-        const response = await axios.post(url);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.post(url, undefined, { headers });
         return response.data;
     } catch (error:any) {
         console.error("Error updating:", error?.response?.data || error.message || error);
@@ -65,11 +75,13 @@ export async function updateUser(): Promise<SimpleResponse> {
     }
 }
 
-export async function updateUserByAdmin(user:UserUpdateBody): Promise<SimpleResponse> {
+export async function updateUserByAdmin(user:UserUpdateBody, token?: string): Promise<SimpleResponse> {
     if(!user) throw new Error("User data is required");
     try {
         const url=`${process.env.SERVER_URL}/admin/user`;
-        const response = await axios.post(url,user);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.put(url,user, { headers });
+       
         return response.data;
     } catch (error:any) {
         console.error("Error updating user:", error?.response?.data || error.message || error);
