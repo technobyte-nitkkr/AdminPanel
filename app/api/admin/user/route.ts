@@ -10,7 +10,8 @@ export async function PUT(request: NextRequest) {
         { success: false, message: 'User data is required' } ,
         { status: 400 }
       );
-    }    const result = await updateUserByAdmin(body,authHeader);
+    }    
+    const result = await updateUserByAdmin(body,authHeader);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json(

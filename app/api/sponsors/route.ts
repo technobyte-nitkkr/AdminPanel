@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       sponsorData = await request.json();
     }
     
-    if (!sponsorData.sponsor.name) {
+    if (!sponsorData.name) {
       return NextResponse.json(
         { success: false, message: 'Category and name are required' },
         { status: 400 }

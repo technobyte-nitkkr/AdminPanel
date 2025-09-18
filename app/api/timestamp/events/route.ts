@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     } catch (error: any) {
         return NextResponse.json(
-            { error: error.message || 'Failed to fetch FAQs' },
+            { error: error.message || 'Failed to fetch upcoming events' },
             { status: 500 }
         );
     }
