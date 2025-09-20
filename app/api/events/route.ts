@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       eventData = await request.json();
     }
     
-    if (!eventData.eventData.category || !eventData.eventData.eventName) {
+    if (!eventData.category || !eventData.eventName) {
       return NextResponse.json(
         { success: false, message: 'Event category and name are required' },
         { status: 400 }

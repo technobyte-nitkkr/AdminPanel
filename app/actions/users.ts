@@ -228,16 +228,6 @@ export async function createUser(email: string, data: User): Promise<void> {
   } catch (error) {
     console.error("Error creating user:", error);
     throw new Error("Failed to create user");
-
-
-
-
-
-
-
-
-
-
   }
 }
 
@@ -281,14 +271,6 @@ export async function updateUser(
     console.error("Error updating user:", error);
     throw new Error("Failed to update user");
 
-
-
-
-
-
-
-
-
   }
 }
 
@@ -321,14 +303,5 @@ export async function deleteUser(email: string): Promise<void> {
   } catch (error) {
     console.error("Error deleting user:", error);
     throw new Error("Failed to delete user");
-
-
-
-
-
-
-
-
-
   }
 }

@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
         { success: false, message: 'Notification data is required' },
         { status: 400 }
       );
-    }    const result = await sendNotification(body,authHeader);
+    }    
+    const result = await sendNotification(body,authHeader);
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(

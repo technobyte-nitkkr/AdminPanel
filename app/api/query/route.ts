@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success:false,
         message:'query is required'
-      })
+      }, { status: 400 })
     }
     const authHeader = request.headers.get('authorization') || '';
     const result = await addQuery(body,authHeader);
