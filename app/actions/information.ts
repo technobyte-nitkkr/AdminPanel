@@ -64,14 +64,14 @@ export async function getCategoriesName(): Promise<Category[]> {
     }
 }
 
-export async function getEventsNames(eventCategory?: string): Promise<Event[]> {
-
+export async function getEventsNames(eventCategory?: string, token?: string): Promise<Event[]> {
     try {
         let url = `${process.env.SERVER_URL}/events`;
         if (eventCategory && eventCategory.trim() !== "") {
             url += `?eventCategory=${encodeURIComponent(eventCategory)}`;
         }
-        const response = await axios.get<EventsResponse>(url);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.get<EventsResponse>(url, { headers });
         return response.data.data.events;
     }
     catch (error: any) {
@@ -80,16 +80,17 @@ export async function getEventsNames(eventCategory?: string): Promise<Event[]> {
     }
 }
 
-export async function getEventsDescriptionByCategory(eventCategory: string,eventName?:string): Promise<Event[]> {
-    if(!eventCategory){
+export async function getEventsDescriptionByCategory(eventCategory: string, eventName?: string, token?: string): Promise<Event[]> {
+    if (!eventCategory) {
         throw new Error("Event category is required");
     }
     try {
-        let url = `${process.env.SERVER_URL}/events/description?eventCategory=${encodeURIComponent(eventCategory)}`
+        let url = `${process.env.SERVER_URL}/events/description?eventCategory=${encodeURIComponent(eventCategory)}`;
         if (eventName && eventName.trim() !== "") {
             url += `&eventName=${encodeURIComponent(eventName)}`;
         }
-        const response = await axios.get<EventsResponse>(url);
+        const headers = token ? { Authorization: token } : undefined;
+        const response = await axios.get<EventsResponse>(url, { headers });
         return response.data.data.events;
     }
     catch (error: any) {
@@ -101,12 +102,11 @@ export async function getEventsDescriptionByCategory(eventCategory: string,event
 
 
 
-export async function getTimelineEvents(): Promise<TimelineEvent[]> {
+export async function getTimelineEvents(token?: string): Promise<TimelineEvent[]> {
   try {
     const url = `${process.env.SERVER_URL}/events/timeline`;
-
-    const response = await axios.get<TimelineResponse>(url);
-
+    const headers = token ? { Authorization: token } : undefined;
+    const response = await axios.get<TimelineResponse>(url, { headers });
     return response.data.data.events;
   } catch (error: any) {
     console.error("Error getting timeline events:", error?.response?.data || error.message || error);
@@ -238,11 +238,13 @@ export async function getFAQs(): Promise<FAQ[]> {
 }
 
 
-export async function getUpcomingEvents(timestamp?: number): Promise<Event[]> {
+export async function getUpcomingEvents(timestamp?: number, token?: string): Promise<Event[]> {
   try {
     const url = `${process.env.SERVER_URL}/timestamp/events`;
+    const headers = token ? { Authorization: token } : undefined;
     const response = await axios.get<EventsResponse>(url, {
       params: { timestamp },
+      headers
     });
     return response.data.data.events;
   } catch (error: any) {
