@@ -1,3 +1,89 @@
+import axios from "axios";
+import { UserEventsResponse,SimpleResponse, UserEventUpdateRequest,AddQueryRequest  } from "../dtos/user.dto";
+import { Event } from "../dtos/event.dto";
+
+export async function getUserEvents(token?: string): Promise<Event[]> {
+  try {
+    const url = `${process.env.SERVER_URL}/user/event`;
+    const headers = token ? { Authorization: token } : undefined;
+    console.log(headers);
+    const response = await axios.get<UserEventsResponse>(url, {
+      withCredentials: true,
+      headers
+    });
+    
+
+    return response.data.data.events;
+  } catch (error: any) {
+    console.error("Error fetching user events:", error?.response?.data || error.message || error);
+    throw new Error(error?.response?.data?.message || "Failed to fetch user events");
+  }
+}
+
+
+export async function updateUserEvent(data: UserEventUpdateRequest, token?: string): Promise<SimpleResponse> {
+  try {
+    const url = `${process.env.SERVER_URL}/user/event`;
+
+    // Create URLSearchParams and append form fields clearly
+    const formData = new URLSearchParams();
+    formData.append("eventName", data.eventName);
+    formData.append("eventCategory", data.eventCategory);
+    const headers: any = { "Content-Type": "application/x-www-form-urlencoded" };
+    if (token) headers.Authorization = token;
+
+    const response = await axios.put(url, data, {
+      headers,
+      withCredentials: true,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Error updating user event:", error?.response?.data || error.message || error);
+    throw new Error(error?.response?.data?.message || "Failed to update user event");
+  }
+}
+
+
+export async function unregisterUserEvent(data: UserEventUpdateRequest, token?: string): Promise<SimpleResponse> {
+  try {
+    const url = `${process.env.SERVER_URL}/user/event/unregister`;
+    const headers: any = { "Content-Type": "application/x-www-form-urlencoded" };
+    if (token) headers.Authorization = token;
+    console.log(headers)
+    const response = await axios.put(url, data, {
+      headers,
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error unregistering user event:", error?.response?.data || error.message || error);
+    throw new Error(error?.response?.data?.message || "Failed to unregister user event");
+  }
+}
+
+
+export async function addQuery(data: AddQueryRequest, token?: string): Promise<SimpleResponse> {
+  try {
+    const url = `${process.env.SERVER_URL}/query`;
+    const formData = new URLSearchParams();
+    formData.append("text", data.text);
+    const headers: any = { "Content-Type": "application/x-www-form-urlencoded" };
+    if (token) headers.Authorization = token;
+
+    const response = await axios.post<SimpleResponse>(url, formData, {
+      headers,
+      withCredentials: true,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Error adding query:", error?.response?.data || error.message || error);
+    throw new Error(error?.response?.data?.message || "Failed to add query");
+  }
+}
+
+
 import {
   collection,
   setDoc,
@@ -40,7 +126,7 @@ export type UsersDTO = {
  * @throws {Error} Throws an error if there is an issue fetching users from the database.
  *
  * @example
- * ```typescript
+ * typescript
  * getAllUsers()
  *   .then((users) => {
  *     console.log(users);
@@ -48,7 +134,7 @@ export type UsersDTO = {
  *   .catch((error) => {
  *     console.error("Error fetching users:", error);
  *   });
- * ```
+ * 
  */
 export async function getAllUsers(): Promise<UsersDTO> {
   try {
@@ -76,7 +162,7 @@ export async function getAllUsers(): Promise<UsersDTO> {
  * @throws {Error} Throws an error if the user is not found or if there is an issue fetching the user.
  *
  * @example
- * ```typescript
+ * typescript
  * getUserByEmail("user@example.com")
  *   .then((user) => {
  *     console.log(user);
@@ -84,7 +170,7 @@ export async function getAllUsers(): Promise<UsersDTO> {
  *   .catch((error) => {
  *     console.error("Error fetching user:", error);
  *   });
- * ```
+ * 
  */
 export async function getUserByEmail(email: string): Promise<User |null> {
   try {
@@ -113,7 +199,7 @@ export async function getUserByEmail(email: string): Promise<User |null> {
  * @throws {Error} Throws an error if there is an issue creating the user.
  *
  * @example
- * ```typescript
+ * typescript
  * const userData: User = {
  *   email: "user@example.com",
  *   name: "John Doe",
@@ -130,7 +216,7 @@ export async function getUserByEmail(email: string): Promise<User |null> {
  *   .catch((error) => {
  *     console.error("Error creating user:", error);
  *   });
- * ```
+ * 
  */
 export async function createUser(email: string, data: User): Promise<void> {
   try {
@@ -156,7 +242,7 @@ export async function createUser(email: string, data: User): Promise<void> {
  * @throws {Error} Throws an error if the user is not found or if there is an issue updating the user.
  *
  * @example
- * ```typescript
+ * typescript
  * const updatedData: Partial<User> = {
  *   name: "Jane Doe",
  *   phone: "1234567890"
@@ -169,7 +255,7 @@ export async function createUser(email: string, data: User): Promise<void> {
  *   .catch((error) => {
  *     console.error("Error updating user:", error);
  *   });
- * ```
+ * 
  */
 export async function updateUser(
   email: string,
@@ -184,6 +270,7 @@ export async function updateUser(
   } catch (error) {
     console.error("Error updating user:", error);
     throw new Error("Failed to update user");
+
   }
 }
 
@@ -197,7 +284,7 @@ export async function updateUser(
  * @throws {Error} Throws an error if the user is not found or if there is an issue deleting the user.
  *
  * @example
- * ```typescript
+ * typescript
  * deleteUser("user@example.com")
  *   .then(() => {
  *     console.log("User deleted successfully");
@@ -205,7 +292,7 @@ export async function updateUser(
  *   .catch((error) => {
  *     console.error("Error deleting user:", error);
  *   });
- * ```
+ * 
  */
 export async function deleteUser(email: string): Promise<void> {
   try {

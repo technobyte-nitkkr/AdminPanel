@@ -36,3 +36,5 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 Let's not have an update feature on eventCategory. (updating by name). It is complex to implement and have no need 
+
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Debatreya/AdminPanel?utm_source=oss&utm_medium=github&utm_campaign=Debatreya%2FAdminPanel&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
